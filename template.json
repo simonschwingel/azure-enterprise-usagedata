@@ -1,0 +1,241 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflow_name": {
+            "defaultValue": "logicApp-usage-download",
+            "type": "string"
+        },
+        "storageNamePrefix": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "API_access_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "azure_enrollment_number": {
+            "defaultValue": null,
+            "type": "string"
+        }
+
+    },
+    "variables": {
+        "storageAccountName": "[concat( parameters('storageNamePrefix'), uniqueString(resourceGroup().id) )]",
+        "connections_azurefile_name": "droptostorage"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "name": "[parameters('workflow_name')]",
+            "apiVersion": "2017-07-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "frequency": "Month",
+                                "interval": 1,
+                                "startTime": "2018-01-03T03:00:00Z",
+                                "timeZone": "UTC"
+                            },
+                            "type": "Recurrence"
+                        }
+                    },
+                    "actions": {
+                        "API_Access_Key": {
+                            "runAfter": {},
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "accesskey",
+                                        "type": "String",
+                                        "value": "[parameters('API_access_key')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "Create_file": {
+                            "runAfter": {
+                                "GetUsageHttp": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "@body('GetUsageHttp')",
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azurefile']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/datasets/default/files",
+                                "queries": {
+                                    "folderPath": "/usage",
+                                    "name": "@{concat('usage_', variables('startDate'), '_', variables('endDate'),'.csv')}",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "GetUsageHttp": {
+                            "runAfter": {
+                                "Init_endDate": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "headers": {
+                                    "Content-Type": "application/json",
+                                    "api-version": "2014-09-02",
+                                    "authorization": "@{concat('bearer ',variables('accesskey'))}"
+                                },
+                                "method": "GET",
+                                "uri": "@{concat('https://consumption.azure.com/v2/enrollments/',variables('enrollment'),'/usagedetails/download?startTime=',variables('startDate'),'&endTime=',variables('endDate'))}"
+                            }
+                        },
+                        "Init_Enrollment_Number": {
+                            "runAfter": {
+                                "API_Access_Key": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "enrollment",
+                                        "type": "String",
+                                        "value": "[parameters('azure_enrollment_number')]"
+                                    }
+                                ]
+                            }
+                        },
+                        "Init_endDate": {
+                            "runAfter": {
+                                "Init_startDate": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "endDate",
+                                        "type": "String",
+                                        "value": "@{formatDateTime(addDays(startOfMonth(utcNow()),-1),'yyyy-MM-dd')}"
+                                    }
+                                ]
+                            }
+                        },
+                        "Init_startDate": {
+                            "runAfter": {
+                                "Init_Enrollment_Number": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "InitializeVariable",
+                            "inputs": {
+                                "variables": [
+                                    {
+                                        "name": "startDate",
+                                        "type": "String",
+                                        "value": "@{formatDateTime(startOfMonth(addDays(startOfMonth(utcNow()),-1)),'yyyy-MM-dd')}"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azurefile": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('connections_azurefile_name'))]",
+                                "connectionName": "azurefile",
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azurefile')]"
+                            }
+                        }
+                    }
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', variables('connections_azurefile_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": false,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "name": "[variables('connections_azurefile_name')]",
+            "apiVersion": "2016-06-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "displayName": "Create File",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azurefile')]"
+                },
+                "parameterValues":{
+                    "accountName": "[variables('storageAccountName')]",
+                    "accessKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
+                }
+            },
+            "dependsOn": []
+        }
+    ]
+}
