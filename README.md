@@ -15,8 +15,6 @@ To access the files with the Azure usage data:
 3. In the file service blade, click the '+ File share'-button
 4. In the 'name'-field type in 'usage' and click 'OK'
 
-### via Azure Portal
-
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsimonschwingel%2Fazure-enterprise-usagedata%2Fmaster%2Ftemplate.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
