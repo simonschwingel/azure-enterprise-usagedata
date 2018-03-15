@@ -15,3 +15,11 @@ template for an logic app which fetches the Azure usage data of an Azure enrollm
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
+### Deployment Parameters
+
+| Name          | Description                             |
+| ------------- | ------------- | 
+| Workflow_name | Will be used as name for your logic app |
+| Storage Name Prefix | will be used as prefix of your storage name. To ensure that the name is unique, an alphanumeric sequence will be | | appended to the prefix for your final storage account name. |
+| API_access_key | This is the API access key from your enterprise portal (https://ea.azure.com). You can copy the key under Reports > Download Usage > API Access Key > expand key > Copy . You can use either the primary or secondary key. The key will be automatically revoked every 5 months at the latest. In case your logic app stops working, please make suer that your key is still valid and update the key if necessary. |
+| Azure_enrollment_number | This is the identifier of your Azure enrollment. You can find this id number i.e. in your enterprise portal (https://ea.azure.com) in the top left corner below the windows icon |
