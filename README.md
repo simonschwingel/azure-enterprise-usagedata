@@ -1,5 +1,11 @@
 # azure-enterprise-usagedata
-template for an logic app which fetches the Azure usage data of an Azure enrollment on a monthly recurrance and drops a CSV file into an Azure File Service account.
+template for an logic app which fetches the Azure usage data of an Azure enrollment on a monthly recurrance and drops a CSV file into an Azure File Service account. 
+To access the files with the Azure usage data:
+1. in Azure portal go to the resource group you deployed to
+2. click on the name of the storage account
+3. in the storage account overview blade, click on the tile 'Files'
+4. In the file service blade, click on the file share named 'usage'
+5. click on the file you want to download and select download from the context menu
 
 ## Deploy to Azure
 
