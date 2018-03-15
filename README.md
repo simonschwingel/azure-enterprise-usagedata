@@ -15,13 +15,3 @@ template for an logic app which fetches the Azure usage data of an Azure enrollm
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-### via powershell
-
-```powershell
-New-AzureRmResourceGroupDeployment -Name <DeploymentName> -ResourceGroupName <RessourceGroupName> -TemplateUri https://raw.githubusercontent.com/simonschwingel/azure-enterprise-usagedata/master/template.json
-```
-
-### via azure cli
-```
-azure group deployment create <RessourceGroupName> <DeploymentName> --template-uri https://raw.githubusercontent.com/simonschwingel/azure-enterprise-usagedata/master/template.json
-```
