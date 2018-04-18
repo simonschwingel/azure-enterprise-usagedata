@@ -68,6 +68,69 @@
                                 ]
                             }
                         },
+                        
+                         "Create_pricesheet_file": {
+                            "runAfter": {
+                                "GetPricingSheetHttp": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "@body('GetPricingSheetHttp')",
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azurefile']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/datasets/default/files",
+                                "queries": {
+                                    "folderPath": "/pricesheet",
+                                    "name": "@{concat('pricesheet_', variables('billingPeriod'), '.json')}",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        },
+                        "GetPricingSheetHttp": {
+                            "runAfter": {
+                                "Init_endDate": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Http",
+                            "inputs": {
+                                "headers": {
+                                    "Content-Type": "application/json",
+                                    "api-version": "2014-09-02",
+                                    "authorization": "@{concat('bearer ',variables('accesskey'))}"
+                                },
+                                "method": "GET",
+                                "uri": "@{concat('https://consumption.azure.com/v2/enrollments/',variables('enrollment'),'/billingPeriods/',variables('billingPeriod'),'/pricesheet')}"
+                            }
+                        },
+                        "Init_billingPeriod": {
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "billingPeriod",
+                            "type": "String",
+                            "value": "@{formatDateTime(addDays(startOfMonth(utcNow()),-1),'yyyyMM')}"
+                        }
+                    ]
+                },
+                "runAfter": {
+                    "Init_Enrollment_Number": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable"
+            },
                         "Create_file": {
                             "runAfter": {
                                 "GetUsageHttp": [
