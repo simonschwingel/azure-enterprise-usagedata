@@ -4,9 +4,9 @@ To access the files with the Azure usage data:
 1. in Azure portal go to the resource group you deployed to
 2. click on the name of the storage account
 3. in the storage account overview blade, click on the tile 'Files'
-4.a) For the usage data: in the file service blade, click on the file share named 'usage'
-4.b) For the price seeht: In the file service blade, click on the file share named 'pricesheet'
-5. click on the file you want to download and select download from the context menu
+4. For the usage data: in the file service blade, click on the file share named 'usage'
+5 For the price seeht: In the file service blade, click on the file share named 'pricesheet'
+6. click on the file you want to download and select download from the context menu
 
 ## Deploy to Azure
 
@@ -14,8 +14,8 @@ To access the files with the Azure usage data:
 1. In the resource group you deployed to, click on the storage account name
 2. In the storage account overview blade, click on the tile 'Files'
 3. In the file service blade, click the '+ File share'-button
-4.a) In the 'name'-field type in 'usage' and click 'OK'
-4.b) In the 'name'-field type in 'pricesheet' and click 'OK'
+4. In the 'name'-field type in 'usage' and click 'OK'
+5. In the 'name'-field type in 'pricesheet' and click 'OK'
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsimonschwingel%2Fazure-enterprise-usagedata%2Fmaster%2Ftemplate.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
